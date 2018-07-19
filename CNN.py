@@ -97,21 +97,22 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters())
 
 for epoch in range(10):
-    running_loss = 0.0
+    running_loss = 0.0                          # loss 값
     for i, data in enumerate(trainloader, 0):
 
         inputs, labels = data
 
         inputs, labels = Variable(inputs), Variable(labels)
 
-        optimizer.zero_grad()
+        optimizer.zero_grad()                   # Weight의 gradient 초기화
 
         outputs = net(inputs)
         loss = criterion(outputs, labels)
-        loss.backward()
+        loss.backward()                         # Gradient 계산
         optimizer.step()
 
-        running_loss += loss.data[0]
+        running_loss += loss.data[0]            # loss값 갱신
+
         if i % 128 == 127:  # print every 2000 mini-batches
             print('[%d, %5d] loss : %.3f' % (epoch + 1, i + 1, running_loss / 128))
             running_loss = 0.0
