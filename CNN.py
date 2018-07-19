@@ -54,7 +54,8 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 
-
+# Python은 Class에서 self라는 방법을 사용.
+#   클래스의 입력이 self로 대체된다고 생각하면 됨.
 class Net(nn.Module):
     def __init__(self):                     # 이 self는 nn.Module을 뜻함.
         super(Net, self).__init__()         # super()는 상속을 뜻하고,
@@ -67,7 +68,7 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(24, 64, 5)   # 이건 nn.Module.conv2을 뜻 함.
         self.b2 = nn.BatchNorm2d(64)        # 이건 nn.Module.b2을 뜻 함.
 
-        self.fc1 = nn.Linear(64 * 5 * 5, 240)
+        self.fc1 = nn.Linear(64 * 5 * 5, 240)   # 이건 nn.Module.fc1을 뜻 함.
         self.fc2 = nn.Linear(240, 84)
         self.fc3 = nn.Linear(84, 10)
 
