@@ -56,15 +56,16 @@ import torch.nn.functional as F
 
 
 class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
+    def __init__(self):                     # 이 self는 nn.Module을 뜻함.
+        super(Net, self).__init__()         # super()는 상속을 뜻하고,
+                                            #   Net과 nn.Module(self)를 전달한다는 뜻????
 
-        self.conv1 = nn.Conv2d(3, 24, 5)
-        self.b1 = nn.BatchNorm2d(24)
-        self.pool = nn.MaxPool2d(2, 2)
+        self.conv1 = nn.Conv2d(3, 24, 5)    # 이건 nn.Module.conv1을 뜻 함.
+        self.b1 = nn.BatchNorm2d(24)        # 이건 nn.Module.b1을 뜻 함.
+        self.pool = nn.MaxPool2d(2, 2)      # 이건 nn.Module.pool을 뜻 함.
 
-        self.conv2 = nn.Conv2d(24, 64, 5)
-        self.b2 = nn.BatchNorm2d(64)
+        self.conv2 = nn.Conv2d(24, 64, 5)   # 이건 nn.Module.conv2을 뜻 함.
+        self.b2 = nn.BatchNorm2d(64)        # 이건 nn.Module.b2을 뜻 함.
 
         self.fc1 = nn.Linear(64 * 5 * 5, 240)
         self.fc2 = nn.Linear(240, 84)
