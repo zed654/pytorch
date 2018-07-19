@@ -7,6 +7,8 @@ import torchvision.utils as utils
 import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 
+torch.device("cuda:0")
+
 transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
