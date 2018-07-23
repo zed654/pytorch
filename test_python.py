@@ -1,10 +1,18 @@
-class a:
+class _aa:
+  def gnp(self):
+    print("_aa")
+
+class aa(_aa):
+  def gnp(self):
+    print("im aa")
+
+class a(aa):
   a_value = 33
   def __init__(self):
     print("a 생성자")
   def gnp(self):
     print("handsome")
-
+    return 4
 
 class b(a):
   def __init__(self):
@@ -13,21 +21,19 @@ class b(a):
   def gnp(self):
     print(self.a_value)
     print("존나")
-    super().gnp()
+    x = super(b, self).gnp()
+    print(x)
     return 3
-
 
 class c(a):
   def __init__(self):
     print("c 생성자")
-
 b_m = b()
-
 # print 1
-b.gnp(b_m)
+print(b_m.gnp())
 
 # print 2
-print(b.a_value)
+#print(b.a_value)
 
 class A:
   def __init__(self):

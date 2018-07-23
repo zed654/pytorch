@@ -58,8 +58,9 @@ import torch.nn.functional as F
 #   클래스의 입력이 self로 대체된다고 생각하면 됨.
 class Net(nn.Module):
     def __init__(self):                     # 이 self는 nn.Module을 뜻함.
-        super(Net, self).__init__()         # super()는 상속을 뜻하고,
-                                            #   Net과 nn.Module(self)를 전달한다는 뜻????
+        super(Net, self).__init__()         # super()는 상속에 대한 오버라이딩을 무시하겠다는 뜻
+                                            #   Super()와 Super(Net, self)는 같은 뜻 이다.
+                                            #   즉, Net이 상속받은(nn.Module로부터) 인스턴스의 메소드(여기선 __init__)를 사용하겠다는 뜻
 
         self.conv1 = nn.Conv2d(3, 24, 5)    # 이건 nn.Module.conv1을 뜻 함.
         self.b1 = nn.BatchNorm2d(24)        # 이건 nn.Module.b1을 뜻 함.
