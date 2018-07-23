@@ -1,3 +1,34 @@
+class a:
+  a_value = 33
+  def __init__(self):
+    print("a 생성자")
+  def gnp(self):
+    print("handsome")
+
+
+class b(a):
+  def __init__(self):
+    print("b 생성자")
+
+  def gnp(self):
+    print(self.a_value)
+    print("존나")
+    super().gnp()
+    return 3
+
+
+class c(a):
+  def __init__(self):
+    print("c 생성자")
+
+b_m = b()
+
+# print 1
+b.gnp(b_m)
+
+# print 2
+print(b.a_value)
+
 class A:
   def __init__(self):
     print("Class A__init__()")
