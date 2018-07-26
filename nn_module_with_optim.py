@@ -49,10 +49,7 @@ for t in range(500):
     # loss.
     loss = loss_fn(y_pred, y)
     print(t, loss.item())
-'''
-    # Zero the gradients before running the backward pass.
-    model.zero_grad()
-'''
+
     optimizer.zero_grad()
     # Backward pass: compute gradient of the loss with respect to all the learnable
     # parameters of the model. Internally, the parameters of each Module are stored
@@ -61,10 +58,3 @@ for t in range(500):
     loss.backward()
     optimizer.step()
 
-'''
-    # Update the weights using gradient descent. Each parameter is a Tensor, so
-    # we can access its gradients like we did before.
-    with torch.no_grad():
-        for param in model.parameters():
-            param -= learning_rate * param.grad
-'''
