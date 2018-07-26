@@ -1,10 +1,18 @@
 class _aa:
+  class Module:
+    def conv1(self):
+      print("I'm conv1")
+  def __init__(self):
+    print("_aa 생성자")
+  def conv1(self):
+    print("conv1")
   def gnp(self):
     print("_aa")
 
-class aa(_aa):
+class aa(_aa.Module):
   def gnp(self):
     print("im aa")
+    self.conv1()
 
 class a(aa):
   a_value = 33
@@ -21,7 +29,7 @@ class b(a):
   def gnp(self):
     print(self.a_value)
     print("존나")
-    x = super(b, self).gnp()
+    x = super(a, self).gnp()
     print(x)
     return 3
 

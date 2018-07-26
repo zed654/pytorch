@@ -54,9 +54,10 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 # Python은 Class에서 self라는 방법을 사용.
 #   클래스의 입력이 self로 대체된다고 생각하면 됨.
-class Net(nn.Module):
+class Net(nn.Module):                       # 얘는 nn 클래스에 Module 클래스 (이중 클래스)를 상속받은 것.
     def __init__(self):                     # 이 self는 nn.Module을 뜻함.
         super(Net, self).__init__()         # super()는 상속에 대한 오버라이딩을 무시하겠다는 뜻
                                             #   Super()와 Super(Net, self)는 같은 뜻 이다.
