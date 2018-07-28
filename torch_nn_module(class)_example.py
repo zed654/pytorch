@@ -45,7 +45,7 @@ for t in range(500):
 
     print(t, loss.item())
 
-    optimizer.zero_grad()
+    optimizer.zero_grad()       # 얘는 .backward() 전에 명령해줘야함.
     loss.backward()
 
     optimizer.step()
