@@ -36,7 +36,9 @@ class b(a):
 class c(a):
   def __init__(self):
     print("c 생성자")
+
 b_m = b()
+
 # print 1
 print(b_m.gnp())
 
