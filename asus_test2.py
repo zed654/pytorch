@@ -55,3 +55,4 @@ for t in range(500):
         # Manually zero the gradients after updating weights
         w1.grad.zero_()
         w2.grad.zero_()
+

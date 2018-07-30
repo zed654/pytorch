@@ -19,6 +19,6 @@ for t in range(500):
     loss = loss_fn(y_pred, y)
     print(t, loss.item())
     optimizer.zero_grad()
-    model.zero_grad()
+    #model.zero_grad()
     loss.backward()
     optimizer.step()
