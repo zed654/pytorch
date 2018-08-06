@@ -33,6 +33,7 @@ class CHP_Net(torch.nn.Module):
         self.loss.backward()
         self.optimizer.step()
 
+
 net = CHP_Net(D_in, H1, H2, D_out)
 
 for t in range(500):
