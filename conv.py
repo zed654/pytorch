@@ -45,6 +45,18 @@ class MNISTConvNet(nn.Module):
 net = MNISTConvNet()
 print(net)
 
-input = torch.randn(1, 1, 28, 28)
+input = torch.randn(1, 1, 28, 28)   # (nSamples, nChannels, Height, Width)
 out = net(input)
 print(out.size())
+
+target = torch.tensor([3], dtype=torch.long)
+loss_fn = nn.CrossEntropyLoss()  # LogSoftmax + ClassNLL Loss
+err = loss_fn(out, target)
+err.backward()
+
+print(err)
+
+print(net.conv1.weight.grad.size())
+
+print(net.conv1.weight.data.norm())  # norm of the weight
+print(net.conv1.weight.grad.data.norm())  # norm of the gradients
