@@ -12,7 +12,7 @@ img = imread('hymenoptera_data/train/ants/0013035.jpg')
 img_tensor = torch.Tensor(img)
 plt.figure()
 plt.imshow(img)
-plt.show(5)
+plt.show()
 
 for t in ['abc', 'def']:
   print(t)
