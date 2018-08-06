@@ -253,7 +253,7 @@ def visualize_model(model, num_images=6):
 #
 
 model_ft = models.resnet18(pretrained=True)
-num_ftrs = model_ft.fc.in_features
+num_ftrs = model_ft.fc.in_features      # ftrs = features
 model_ft.fc = nn.Linear(num_ftrs, 2)
 
 model_ft = model_ft.to(device)
@@ -264,6 +264,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
 
 # Decay LR by a factor of 0.1 every 7 epochs
+# = Learning Rate를 7 epochs마다 0.1씩 감소시키는 것.
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
 ######################################################################

@@ -1,3 +1,22 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+
+x = torch.randn(20, 30)
+plt.figure()
+plt.plot(x.numpy())
+
+from matplotlib.image import imread
+
+img = imread('hymenoptera_data/train/ants/0013035.jpg')
+img_tensor = torch.Tensor(img)
+plt.figure()
+plt.imshow(img)
+plt.show(5)
+
+for t in ['abc', 'def']:
+  print(t)
+
 class _aa:
   class Module:
     def conv1(self):
