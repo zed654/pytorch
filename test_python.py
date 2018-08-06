@@ -1,21 +1,22 @@
 import matplotlib.pyplot as plt
+from matplotlib.image import imread
 import numpy as np
 import torch
 
 x = torch.randn(20, 30)
-plt.figure()
+plt.figure(1)
 plt.plot(x.numpy())
 
-from matplotlib.image import imread
 
 img = imread('hymenoptera_data/train/ants/0013035.jpg')
 img_tensor = torch.Tensor(img)
-plt.figure()
+plt.figure(2)
 plt.imshow(img)
-plt.show(5)
+plt.show()
 
 for t in ['abc', 'def']:
   print(t)
+
 
 class _aa:
   class Module:
