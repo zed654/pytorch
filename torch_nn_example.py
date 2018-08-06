@@ -26,7 +26,7 @@ model = torch.nn.Sequential(
     torch.nn.Linear(D_in, H),   # model[0]에 정보가 저장된다.(bias, weights, grad 등)
     torch.nn.ReLU(),            # model[1]에 정보가 저장된다.(bias, weights, grad 등)
     torch.nn.Linear(H, D_out)   # model[2]에 정보가 저장된다.(bias, weights, grad 등)
-    #,torch.nn.Softmax()
+    #torch.nn.Softmax()
 )
 
 # The nn package also contains definitions of popular loss functions; in this

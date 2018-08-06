@@ -31,6 +31,7 @@ for i in range(500):
     #torch.set_grad_enabled(True)
     #x[0][4] = 1
     torch.set_grad_enabled(True)
+
     f1 = torch.mm(x, w1)
     z1 = torch.clamp(f1, min=0)
     #z1[0][8] = 1
