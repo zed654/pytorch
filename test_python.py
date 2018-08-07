@@ -1,3 +1,9 @@
+import os
+
+test_1 = {'a' : '3'}
+test_2 = {b : '3' for b in range(2)}
+test_3 = {c : os.path.join('path_name', c) for c in ['what', 'how']}
+
 import matplotlib.pyplot as plt
 from matplotlib.image import imread
 import numpy as np

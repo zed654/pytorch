@@ -91,8 +91,9 @@ data_dir = 'hymenoptera_data'
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
+# image_datasets에는 train : hymenoptera_data/train 과 val : hymenoptera_data/val 이 생성된다.
 
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
+dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,  # CNN에서 배치사이즈란, 한 번에 처리하는 이미지 장의 수 이다.
                                              shuffle=True, num_workers=4)
               for x in ['train', 'val']}
 
@@ -122,7 +123,7 @@ def imshow(inp, title=None):
 
 
 # Get a batch of training data
-inputs, classes = next(iter(dataloaders['train']))
+inputs, classes = next(iter(dataloaders['train']))  # inputs.size는 4, 3, 224, 224가 잡히는데, 4는 배치사이즈(이미지4장), 3은 채널, 224는
 
 # Make a grid from batch
 out = torchvision.utils.make_grid(inputs)
