@@ -14,7 +14,7 @@ transform = transforms.Compose(
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 )
 
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=False, transform=transform)
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=10)
 
@@ -32,16 +32,18 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship'
 
 import matplotlib.pylab as plt
 import numpy as np
-
+print('img show')
 def imshow(img):
     img = img / 2 + 0.5
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg,(1,2,0)))
     plt.show()
 
+print('make dataiter')
 dataiter = iter(trainloader)
+print('make image, labels')
 images, labels = dataiter.next()
-
+print('make imshow_make_grid')
 imshow(torchvision.utils.make_grid(images))
 
 print(''.join('%5s' % classes[labels[j]] for j in range(4)))
@@ -63,11 +65,11 @@ class Net(nn.Module):                       # 얘는 nn 클래스에 Module 클�
                                             #   Super()와 Super(Net, self)는 같은 뜻 이다.
                                             #   즉, Net이 상속받은(nn.Module로부터) 인스턴스의 메소드(여기선 __init__)를 사용하겠다는 뜻
 
-        self.conv1 = nn.Conv2d(3, 24, 5)    # 이건 nn.Module.conv1을 뜻 함.
-        self.b1 = nn.BatchNorm2d(24)        # 이건 nn.Module.b1을 뜻 함.
-        self.pool = nn.MaxPool2d(2, 2)      # 이건 nn.Module.pool을 뜻 함.
+        self.conv1 = nn.Conv2d(3, 24, 5)    # 이건 nn.Module.conv1을 뜻 함.  입력 3채널, 출력 24채널, 커널사이즈 5x5
+        self.b1 = nn.BatchNorm2d(24)        # 이건 nn.Module.b1을 뜻 함.     24채널에 대한 배치노멀라이즈
+        self.pool = nn.MaxPool2d(2, 2)      # 이건 nn.Module.pool을 뜻 함.   stride=2, padding=2 로 maxpolling
 
-        self.conv2 = nn.Conv2d(24, 64, 5)   # 이건 nn.Module.conv2을 뜻 함.
+        self.conv2 = nn.Conv2d(24, 64, 5)   # 이건 nn.Module.conv2을 뜻 함.  입력 24채널, 출력 64채널, 커널사이즈 5x5
         self.b2 = nn.BatchNorm2d(64)        # 이건 nn.Module.b2을 뜻 함.
 
         self.fc1 = nn.Linear(64 * 5 * 5, 240)   # 이건 nn.Module.fc1을 뜻 함.
@@ -96,12 +98,12 @@ net
 import torch.optim as optim
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(net.parameters())
+optimizer = optim.Adam(net.parameters())        # learning_rate는?
 
 for epoch in range(10):
     running_loss = 0.0                          # loss 값
     for i, data in enumerate(trainloader, 0):
-
+        print('%d kk' % i)
         inputs, labels = data
 
         inputs, labels = Variable(inputs), Variable(labels)

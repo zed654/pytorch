@@ -52,7 +52,7 @@ image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
 
-# datalodaers에 이미지를 넣는다. 조건으로 4장씩 넣으며(배치사이즈=4), 랜덤한 이미지로 넣는다. (num_worksers는 ??)
+# datalodaers에 이미지를 넣는다. 조건으로 4장씩 넣으며(배치사이즈=4), 랜덤한 이미지로 넣는다. (num_worksers는 작업에 사용될 프로세서 개수. default=0, 0이면 main process에서 돌아감.)
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
                                              shuffle=True, num_workers=4)
               for x in ['train', 'val']}
