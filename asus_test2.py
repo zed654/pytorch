@@ -22,6 +22,7 @@ w1 = torch.randn(D_in, H, device=device, dtype=dtype, requires_grad=True)
 w2 = torch.randn(H, D_out, device=device, dtype=dtype, requires_grad=True)
 
 learning_rate = 1e-6
+
 for t in range(500):
     # Forward pass: compute predicted y using operations on Tensors; these
     # are exactly the same operations we used to compute the forward pass using

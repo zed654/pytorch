@@ -14,7 +14,7 @@ transform = transforms.Compose(
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 )
 
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=False, transform=transform)
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=10)
 
@@ -96,11 +96,12 @@ net
 import torch.optim as optim
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(net.parameters())
+optimizer = optim.Adam(net.parameters())        # learning_rate default value is 0.01
 
 for epoch in range(10):
     running_loss = 0.0                          # loss 값
     for i, data in enumerate(trainloader, 0):
+        print('%d kkk' % i)
 
         inputs, labels = data
 
@@ -132,7 +133,7 @@ for epoch in range(10):
 
 print('Finished Training')
 
-torch.save(net.state_dict(), 'CNN.pkl')
+torch.save(net.state_dict(), 'CNN_.pkl')
 
 
 
