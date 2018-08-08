@@ -96,7 +96,7 @@ net
 import torch.optim as optim
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(net.parameters())
+optimizer = optim.Adam(net.parameters())    # learning_rate는 디폴트값 0.01을 갖는다.
 
 for epoch in range(10):
     running_loss = 0.0                          # loss 값
