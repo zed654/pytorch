@@ -3,6 +3,7 @@ import torch
 
 dtype = torch.float
 device = torch.device("cpu")
+
 N, D_in, H, D_out = 64, 1000, 100, 10
 
 x = torch.randn(N, D_in, device=device, dtype=dtype)
