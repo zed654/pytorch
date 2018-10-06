@@ -1,30 +1,19 @@
 import torch
-# import numpy as np
-import time
-
-# import torchvision
-
+import torchvision
 from torchvision.transforms import ToPILImage
-from IPython.display import Image
+import torchvision.transforms as transforms
 
-
-
+import time
 import numpy as np
 import matplotlib.pylab as plt
 
-# def imshow(img):
-#     img = img / 2 + 0.5
-#     npimg = img.numpy()
-#     plt.imshow(np.transpose(npimg,(1,2,0)))
-#     plt.show()
 
 
-def show(img):
-         npimg = img.numpy()
-         plt.imshow(np.transpose(npimg, (2,0,1)), interpolation='nearest')
-         plt.show()
+# path_test = '/Users/CHP/Lane_detector_pytorch/sample'
+# name_test = '00000098.jpg'
+# torchvision.datasets.PhotoTour(path_test, name_test, train=True, transform=None, download=False)
 
-to_img = ToPILImage()
+transforms = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=0, std=0.2)]) # 0~255 -> 0~1
 
 
 # numpy input img를 pytorch img로
@@ -40,7 +29,7 @@ def read_img(path):
     return input_img_torch_tmp
 
 
-    
+
 
 # pytorch img를 numpy img로
 input_img2 = torch.randint(128, 129, (3, 1920, 1208))     # 0 ~ 254
@@ -60,16 +49,7 @@ def show_img(img):
 
 # input_img_torch = torch.from_numpy(np.transpose(input_img, (2, 0, 1)), interpolation='nearest')
 
-plt.imshow()
-# display tensor
-a = torch.randint(128, 255, (3, 64, 64)).normal_()
-show(a)
-
-    # torch.Tensor(3, 64, 64).normal_()
-to_img(a)
-
-#display imagefile
-Image('/Users/CHP/Lane_detector_pytorch/sample/00000098.jpg')
+to_img = ToPILImage()
 
 # img = Image.open('/home/CHP/Lane_detector_pytorch/sample/00000098.jpg').convert('RGB')
 # to_pil = torchvision.transforms.ToPILImage()
@@ -104,6 +84,8 @@ width = 15#256#256     #1280
 height = 15#480#256    #960    # 1920 / 4 = 480
 outputs_class = 2  #480
 
+# cuda가 있으면 GPU연산을 하고, 없으면 CPU연산
+device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
 
 # inputs = torch.randn(mini_batch, channel, width, height)
 inputs = torch.randint(0, 255, (mini_batch, channel, width, height))    # 0~255범위의 값을 입력한다.
@@ -111,10 +93,21 @@ print(inputs)
 
 # outputs = torch.randn(mini_batch, outputs_class)        # GT image
 # outputs = torch.Tensor([[1., 0.], [1., 0.], [1., 0.]])
-outputs = torch.randint(0, 2, (mini_batch, outputs_class))
-for t in range(mini_batch):
-    outputs[t][0] = 1.
-    outputs[t][1] = 0.
+
+
+
+
+# 아래의 주석이 풀린 outputs과 같은 결과임. 더 간단해서 바꿧음
+# outputs = torch.randint(0, 2, (mini_batch, outputs_class))
+# for t in range(mini_batch):
+#     outputs[t][0] = 1.
+#     outputs[t][1] = 0.
+
+outputs = torch.Tensor(mini_batch, outputs_class)
+outputs[:, 0] = 1.
+outputs[:, 1] = 0.
+
+
 
 # outputs = torch.Tensor([[0.5, 0.5],[0.8, 0.8],[1., 1.]])    # mini_batch = 3, output class = 2 임
 

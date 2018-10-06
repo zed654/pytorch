@@ -55,6 +55,39 @@
 # Tensor a의 원소합
 #   a.sum()
 
+
+
+
+
+
+#                                       #
+#   Pytorch에서 이미지 read/write/modify   #
+#                                       #
+
+# Pytorch에서 이미지를 사용하기 위해서는 PIL이미지를 사용하는것이 좋다.
+# 이유는 Python에서 기본적으로 지원하는 함수이며, OpenCV에 있는 기본 기능 모두 구현이 가능하다.
+
+# Python에서 이미지 처리는 PIL 사용
+#   from PIL import Image
+
+# PIL에서 이미지 read
+#   img_PIL = Image.open('/Users/.../~.jpg')
+
+# PIL에서 이미지 show
+#   img_PIL.show()
+
+# PIL Image To Tensor
+#   from torchvision.transforms import ToTensor
+#   to_Tensor = ToTensor()
+#   img_Tensor = to_Tensor(img_PIL) or img_Tensor = ToTensor()(img_PIL)
+
+
+# Tensor To PIL Image
+#   from torchvision.transforms import ToPILImage
+#   to_PIL = ToPILImage()
+#   img_PIL = to_PIL(img_Tensor)      or      img_PIL = ToPILImage()(img_Tensor)
+
+
 '''
 x = torch.randn(1, 10)
 prev_h = torch.randn(1, 20)
