@@ -177,11 +177,11 @@ for t in range(100):
 " Train method 3"
 "GT영역만 잡아서 CNN없이 FC로 --> 근대 얜 별로일듯. 2d 특징이 죽을 것 같음."
 
-mini_batch = 30
+batch_size = 10
 channel = 3
 width = 15#256#256     #1280
 height = 15#480#256    #960    # 1920 / 4 = 480
-outputs_class = 2  #480
+outputs_class = 5  #480
 
 # cuda가 있으면 GPU연산을 하고, 없으면 CPU연산
 device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
@@ -202,9 +202,11 @@ device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
 #     outputs[t][0] = 1.
 #     outputs[t][1] = 0.
 
-outputs = torch.Tensor(mini_batch, outputs_class)
+outputs = torch.Tensor(batch_size, outputs_class)
 outputs[:, 0] = 1.
-outputs[:, 1] = 0.
+for i in range(outputs_class-1):
+    outputs[:, i+1] = 0.
+
 
 
 
@@ -255,9 +257,9 @@ class KJY_MODEL(torch.nn.Module):
 
             # 최종 Classification단계
             #       최종 1000개의 Feature에서 최종 클래스인 2 (차선이다, 아니다)로 구분
-            torch.nn.Linear(1000, 2)
-            # torch.nn.BatchNorm1d(2)        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
-            # torch.nn.Softmax()
+            torch.nn.Linear(1000, outputs_class),
+            # torch.nn.BatchNorm1d(outputs_class),        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
+            torch.nn.Softmax()
         )
 
     def forward(self, input_):
@@ -277,26 +279,39 @@ class KJY_MODEL(torch.nn.Module):
 # 아래는 Training 단계
 net = KJY_MODEL().to(device)
 
-learning_rate = 1.5e-1
-optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
+# net.load_state_dict(torch.load('save_Lane_net_20181007.pt'))
+net.load_state_dict(torch.load('save_Lane_net.pt'))
+
+
 loss_fun = torch.nn.MSELoss()
 
+# while(1):
+
 for t in range(500):
+
+    # 학습한 데이터 입력
+    l = int(len(img_PIL_patch) / batch_size)
+    n = (t % l)+1
+    m = batch_size * n
+    inputs = ToTensor()(img_PIL_patch[m-1])
+    inputs = inputs.view(1, 3, 15, 15)
+    for i in range(batch_size-1):
+        inputs_tmp = ToTensor()(img_PIL_patch[m-i-2])
+        inputs_tmp = inputs_tmp.view(1, 3, 15, 15)
+        inputs = torch.cat((inputs, inputs_tmp), 0)
+
+    # 랜덤 데이터 입력
+    # inputs = torch.randint(0, 255, (batch_size, channel, width, height))  # 0~255범위의 값을 입력한다.
+
     start_clock = time.time()
 
     hypothesis = net.forward(inputs).to(device)
 
-    loss = loss_fun(hypothesis, outputs).to(device)
-
-    finish_clock = time.time()
-    fps = 1. / (finish_clock - start_clock)
-    print(t, loss.item(), 'fps = %f' % (fps))
-
-    optimizer.zero_grad()
-
-    loss.backward()
-
-    optimizer.step()
-
-    if (t == 499):
-        torch.save(net.state_dict(), 'save_Lane_net.pt')
+    print(hypothesis)
+    # print('%.2f' % hypothesis)
+    # # 아래 과정에서 loss 계산, backpropagation
+    # loss = loss_fun(hypothesis, outputs).to(device)
+    #
+    # finish_clock = time.time()
+    # fps = 1. / (finish_clock - start_clock)
+    # print(loss.item(), 'fps = %f' % (fps))

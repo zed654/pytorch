@@ -15,6 +15,12 @@ import matplotlib.pylab as plt
 # gt txt의 폴더를 읽어 txt파일들의 이름을 변수에 저장한 후
 # 조금 수정하여 img files의 이름도 저장한 코드이다.
 
+# 이미지에 점 그리는 함수. 20x20의 사이즈로 그려진다.
+def putpixel_area(img_, x_, y_):
+    for i in range(20):
+        for j in range(20):
+            img_.putpixel((x_ + j, y_ + i), (128, 128, 128))
+
 # 해당 이름을 기준으로 txt를 실행
 txt_path = '/Users/CHP/Lane_detector_pytorch/sample/txt/'
 img_path = '/Users/CHP/Lane_detector_pytorch/sample/'
@@ -63,21 +69,10 @@ for i in range(len(txt_files)):
         coordinates_tmp.append(gt_data[c + 1].split(" "))
     coordinates.append(coordinates_tmp)
 
-
 # 요약
 #   txt_name[num]
 #   img_name[num]
 #   coordinates[num][좌표카운팅][좌표의x점][좌표의y점]
-
-# img_name과 coordinates를 이용해 GT patch를 추출해낸다.
-# GT patch는 따로 저장해둬야함..?
-
-
-def putpixel_area(img_, x_, y_):
-    for i in range(20):
-        for j in range(20):
-            img_.putpixel((x_ + j, y_ + i), (128, 128, 128))
-
 
 # patch save
 img_PIL_patch = []
@@ -96,122 +91,26 @@ for gt_num in range(len(coordinates)):
         y2 = int((int(coordinates[gt_num][coord_num][1]) + 15)/2 + 302)
         patch_tmp = img_PIL_resize.crop((x1, y1, x2, y2))
 
-        # resized된 이미지에서 patch size를 30x30로
-        # x1 = int(int(coordinates[gt_num][coord_num][0]) / 2 - 15)
-        # y1 = int(int(coordinates[gt_num][coord_num][1]) / 2 - 15 + 302)
-        # x2 = int(int(coordinates[gt_num][coord_num][0]) / 2 + 15)
-        # y2 = int(int(coordinates[gt_num][coord_num][1]) / 2 + 15 + 302)
-        # patch_tmp = img_PIL_resize.crop((x1, y1, x2, y2))
-
-        # 원본 이미지에서 patch size를 120x120로
-        # x1 = (int(coordinates[gt_num][coord_num][0]) - 60)
-        # y1 = (int(coordinates[gt_num][coord_num][1]) - 60) + 604
-        # x2 = (int(coordinates[gt_num][coord_num][0]) + 60)
-        # y2 = (int(coordinates[gt_num][coord_num][1]) + 60) + 604
-        # patch_tmp = img_PIL.crop((x1, y1, x2, y2))
-
-        # 원본 이미지에 GT x, y좌표를 그리는 코드
-        # tmp_x = int(coordinates[gt_num][coord_num][0])
-        # tmp_y = int(coordinates[gt_num][coord_num][1])
-        # putpixel_area(img_PIL, tmp_x, tmp_y + 604)
-        # img_PIL.show()
-
         img_PIL_patch.append(patch_tmp)
 
-# patch 이미지 view
-# for i in range(len(img_PIL_patch)):
-#     img_PIL_patch[i].show()
 
+device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
 
-# # batch_size에 맞춰서 PIL을 tensor형식으로 바꾸기
-# batch_size = 10
-# result = ToTensor()(img_PIL_patch[0])
-# result = result.view(1,3,15,15)
-#
-# for i in range(len(img_PIL_patch)):
-#     if (i%batch_size == 0) & (i != 0):
-#         for j in range(batch_size):
-#             print(i, j, i-j-1)
-#             if i-j-1 != 0 : # 처음 result에 들어가있어서.
-#                 k = ToTensor()(img_PIL_patch[i - j - 1])
-#                 k = k.view(1,3,15,15)
-#                 result = torch.cat((result, k), 0)
-
-
-# 10 batch size로 inputs 데이터를 묶은 것.
 batch_size = 10
-patch_ea = len(img_PIL_patch)
-for t in range(100):
-    # Input patch image load and reform to mini batch format
-    l = int(len(img_PIL_patch) / batch_size)
-    n = (t % l)+1
-    m = batch_size * n
-    inputs = ToTensor()(img_PIL_patch[m-1])
-    inputs = inputs.view(1, 3, 15, 15)
-    for i in range(batch_size-1):
-        inputs_tmp = ToTensor()(img_PIL_patch[m-i-2])
-        inputs_tmp = inputs_tmp.view(1, 3, 15, 15)
-        inputs = torch.cat((inputs, inputs_tmp), 0)
-
-
-"입력 이미지는 4:3기준 512*384(4:3 * 128)로 리사이즈하여 사용"
-"GT는 좌표지점 기준으로 15 * 15 예상 (홀수여야함)"
-
-"region proposal 1은 세로 Grid 기준, 7pixel(=15/2)씩 이동. 가로가 512면 한 줄에 약 73개"
-"region proposal 1 ... 세로가 20줄이면 1,460개의 Region이 제안된다."
-
-"region proposal 2 세로 Grid기준, 최하단의 grid는 7pixel(=15/2)씩 이동하고 Lane Search Flag에 1을 줌"
-"region proposal 2 ... 첫 줄의 Lane Search Flag가 1인 부분의 상단부분만 (동일 x기준, k픽셀의 +,- 범위에서. k는 아직 미정)"
-"region proposal 2 ... 얘는 대략 [<차선 개수> * 3] 개의 Region이 제안될 것으로 예측 (약 12개씩)"
-"region proposal 2 ... 고로 20줄이면, 첫 줄에 73개. 두 번째 줄 부터 12개씩 1 * 73 + 19 * 12 = 301개의 region이 제안됨 "
-"region proposal 2 ... 장점으로는 속도가 빠르나, 단점으로는 첫 줄에서 찾지 못하면 뒤로도 못찾음"
-"region proposal 2 ... 하지만 해볼만한 이유로는 차선 패턴이 단순하여 정확도, 재현율이 거의 100%일 것 같음"
-
-" Train method 1"
-"CNN을 통한 Classifier 학습은 region proposal된 부분만 시켜도 될 듯 함."
-"False에 대한 15 * 15 이미지는 필요 없음 (학습 방식을 보면 당연한거임)"
-
-" Train method 2"
-"이미지 전체에 GT영역 넣어서 연산"
-
-" Train method 3"
-"GT영역만 잡아서 CNN없이 FC로 --> 근대 얜 별로일듯. 2d 특징이 죽을 것 같음."
-
-mini_batch = 30
 channel = 3
 width = 15#256#256     #1280
 height = 15#480#256    #960    # 1920 / 4 = 480
-outputs_class = 2  #480
+outputs_class = 5  #480
 
-# cuda가 있으면 GPU연산을 하고, 없으면 CPU연산
-device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
+inputs = ToTensor()(img_PIL_patch[0])
+inputs = inputs.view(1,3,15,15)
 
-# inputs = torch.randn(mini_batch, channel, width, height)
-# inputs = torch.randint(0, 255, (mini_batch, channel, width, height))    # 0~255범위의 값을 입력한다.
-# print(inputs)
-
-# outputs = torch.randn(mini_batch, outputs_class)        # GT image
-# outputs = torch.Tensor([[1., 0.], [1., 0.], [1., 0.]])
-
-
-
-
-# 아래의 주석이 풀린 outputs과 같은 결과임. 더 간단해서 바꿧음
-# outputs = torch.randint(0, 2, (mini_batch, outputs_class))
-# for t in range(mini_batch):
-#     outputs[t][0] = 1.
-#     outputs[t][1] = 0.
-
-outputs = torch.Tensor(mini_batch, outputs_class)
+outputs = torch.Tensor(batch_size, outputs_class)
 outputs[:, 0] = 1.
-outputs[:, 1] = 0.
+for i in range(outputs_class-1):
+    outputs[:, i+1] = 0.
 
-
-
-# outputs = torch.Tensor([[0.5, 0.5],[0.8, 0.8],[1., 1.]])    # mini_batch = 3, output class = 2 임
-
-# outputs = torch.Tensor([[700, 300], [201, 203], [220, 110]])
-# torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True)
+print(outputs)
 
 class KJY_MODEL(torch.nn.Module):
     def __init__(self):
@@ -255,8 +154,8 @@ class KJY_MODEL(torch.nn.Module):
 
             # 최종 Classification단계
             #       최종 1000개의 Feature에서 최종 클래스인 2 (차선이다, 아니다)로 구분
-            torch.nn.Linear(1000, 2)
-            # torch.nn.BatchNorm1d(2)        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
+            torch.nn.Linear(1000, outputs_class)
+            # torch.nn.BatchNorm1d(outputs_class),        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
             # torch.nn.Softmax()
         )
 
@@ -277,15 +176,32 @@ class KJY_MODEL(torch.nn.Module):
 # 아래는 Training 단계
 net = KJY_MODEL().to(device)
 
-learning_rate = 1.5e-1
+learning_rate = 1.5e-1#1.5e-1
 optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 loss_fun = torch.nn.MSELoss()
 
-for t in range(500):
+for t in range(1000):
+
+
+    # Input patch image load and reform to mini batch format
+    l = int(len(img_PIL_patch) / batch_size)
+    n = (t % l)+1
+    m = batch_size * n
+    inputs = ToTensor()(img_PIL_patch[m-1])
+    inputs = inputs.view(1, 3, 15, 15)
+    for i in range(batch_size-1):
+        inputs_tmp = ToTensor()(img_PIL_patch[m-i-2])
+        inputs_tmp = inputs_tmp.view(1, 3, 15, 15)
+        inputs = torch.cat((inputs, inputs_tmp), 0)
+
+
+
     start_clock = time.time()
 
+    # 아래 과정에서 inference
     hypothesis = net.forward(inputs).to(device)
 
+    # 아래 과정에서 loss 계산, backpropagation
     loss = loss_fun(hypothesis, outputs).to(device)
 
     finish_clock = time.time()
@@ -298,5 +214,6 @@ for t in range(500):
 
     optimizer.step()
 
-    if (t == 499):
+    # if (t == 999) | (loss.item() < 1.5e-3):
+    if(loss.item() < 1.5e-3):
         torch.save(net.state_dict(), 'save_Lane_net.pt')
