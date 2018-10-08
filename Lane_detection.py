@@ -89,12 +89,12 @@ for gt_num in range(len(coordinates)):
     for coord_num in range(len(coordinates[gt_num])):
         print(gt_num, coord_num)
 
-        # resized된 이미지에서 patch size를 15x15로
-        x1 = int((int(coordinates[gt_num][coord_num][0]) - 15)/2)
-        y1 = int((int(coordinates[gt_num][coord_num][1]) - 15)/2 + 302)
-        x2 = int((int(coordinates[gt_num][coord_num][0]) + 15)/2)
-        y2 = int((int(coordinates[gt_num][coord_num][1]) + 15)/2 + 302)
-        patch_tmp = img_PIL_resize.crop((x1, y1, x2, y2))
+        # # resized된 이미지에서 patch size를 15x15로
+        # x1 = int((int(coordinates[gt_num][coord_num][0]) - 15)/2)
+        # y1 = int((int(coordinates[gt_num][coord_num][1]) - 15)/2 + 302)
+        # x2 = int((int(coordinates[gt_num][coord_num][0]) + 15)/2)
+        # y2 = int((int(coordinates[gt_num][coord_num][1]) + 15)/2 + 302)
+        # patch_tmp = img_PIL_resize.crop((x1, y1, x2, y2))
 
         # resized된 이미지에서 patch size를 30x30로
         # x1 = int(int(coordinates[gt_num][coord_num][0]) / 2 - 15)
@@ -103,12 +103,12 @@ for gt_num in range(len(coordinates)):
         # y2 = int(int(coordinates[gt_num][coord_num][1]) / 2 + 15 + 302)
         # patch_tmp = img_PIL_resize.crop((x1, y1, x2, y2))
 
-        # 원본 이미지에서 patch size를 120x120로
-        # x1 = (int(coordinates[gt_num][coord_num][0]) - 60)
-        # y1 = (int(coordinates[gt_num][coord_num][1]) - 60) + 604
-        # x2 = (int(coordinates[gt_num][coord_num][0]) + 60)
-        # y2 = (int(coordinates[gt_num][coord_num][1]) + 60) + 604
-        # patch_tmp = img_PIL.crop((x1, y1, x2, y2))
+        # 원본 이미지에서 patch size를 30x30로
+        x1 = (int(coordinates[gt_num][coord_num][0]) - 15)
+        y1 = (int(coordinates[gt_num][coord_num][1]) - 15) + 604
+        x2 = (int(coordinates[gt_num][coord_num][0]) + 15)
+        y2 = (int(coordinates[gt_num][coord_num][1]) + 15) + 604
+        patch_tmp = img_PIL.crop((x1, y1, x2, y2))
 
         # 원본 이미지에 GT x, y좌표를 그리는 코드
         # tmp_x = int(coordinates[gt_num][coord_num][0])
@@ -119,8 +119,8 @@ for gt_num in range(len(coordinates)):
         img_PIL_patch.append(patch_tmp)
 
 # patch 이미지 view
-# for i in range(len(img_PIL_patch)):
-#     img_PIL_patch[i].show()
+for i in range(len(img_PIL_patch)):
+    img_PIL_patch[i].show()
 
 
 # # batch_size에 맞춰서 PIL을 tensor형식으로 바꾸기

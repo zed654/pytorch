@@ -181,7 +181,7 @@ batch_size = 10
 channel = 3
 width = 15#256#256     #1280
 height = 15#480#256    #960    # 1920 / 4 = 480
-outputs_class = 5  #480
+outputs_class = 2  #480
 
 # cuda가 있으면 GPU연산을 하고, 없으면 CPU연산
 device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
@@ -245,19 +245,19 @@ class KJY_MODEL(torch.nn.Module):
             torch.nn.BatchNorm1d(274*5*5),
 
             # FC Linear calc 1단계
-            torch.nn.Linear(274*5*5, 1000),
-            torch.nn.BatchNorm1d(1000),
+            torch.nn.Linear(274*5*5, 4000),
+            torch.nn.BatchNorm1d(4000),
             torch.nn.ReLU(inplace=True),
 
             # FC Linear calc 2단계
             #       1000 -> 1000의 이유는 차원 증가를 위해서. (MLP쓰는 이유에서 착안)
-            torch.nn.Linear(1000, 1000),
-            torch.nn.BatchNorm1d(1000),
+            torch.nn.Linear(4000, 4000),
+            torch.nn.BatchNorm1d(4000),
             torch.nn.ReLU(inplace=True),
 
             # 최종 Classification단계
             #       최종 1000개의 Feature에서 최종 클래스인 2 (차선이다, 아니다)로 구분
-            torch.nn.Linear(1000, outputs_class),
+            torch.nn.Linear(4000, outputs_class),
             # torch.nn.BatchNorm1d(outputs_class),        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
             torch.nn.Softmax()
         )
@@ -307,7 +307,19 @@ for t in range(500):
 
     hypothesis = net.forward(inputs).to(device)
 
-    print(hypothesis)
+    # hypothesis 결과를 True, False로 출력하는 코드
+    for k in range(batch_size):
+        if hypothesis[k][0] > hypothesis[k][1] :
+            print(True)
+        else:
+            print(False)
+    print('\n')
+
+    # hypothesis 결과를 value로 출력하는 코드
+    # print(hypothesis)
+
+
+
     # print('%.2f' % hypothesis)
     # # 아래 과정에서 loss 계산, backpropagation
     # loss = loss_fun(hypothesis, outputs).to(device)

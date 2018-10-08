@@ -22,8 +22,10 @@ def putpixel_area(img_, x_, y_):
             img_.putpixel((x_ + j, y_ + i), (128, 128, 128))
 
 # 해당 이름을 기준으로 txt를 실행
-txt_path = '/Users/CHP/Lane_detector_pytorch/sample/txt/'
-img_path = '/Users/CHP/Lane_detector_pytorch/sample/'
+# txt_path = '/Users/CHP/Lane_detector_pytorch/sample/txt/'
+# img_path = '/Users/CHP/Lane_detector_pytorch/sample/'
+txt_path = '/Users/CHP/Lane_detector_pytorch/gt_sw/txt/'
+img_path = '/Users/CHP/Lane_detector_pytorch/gt_Sw/'
 
 for root, dirs, txt_files in os.walk(txt_path):
     for t in txt_files:
@@ -96,11 +98,11 @@ for gt_num in range(len(coordinates)):
 
 device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
 
-batch_size = 10
+batch_size = 30
 channel = 3
 width = 15#256#256     #1280
 height = 15#480#256    #960    # 1920 / 4 = 480
-outputs_class = 5  #480
+outputs_class = 2  #480
 
 inputs = ToTensor()(img_PIL_patch[0])
 inputs = inputs.view(1,3,15,15)
@@ -142,19 +144,19 @@ class KJY_MODEL(torch.nn.Module):
             torch.nn.BatchNorm1d(274*5*5),
 
             # FC Linear calc 1단계
-            torch.nn.Linear(274*5*5, 1000),
-            torch.nn.BatchNorm1d(1000),
+            torch.nn.Linear(274*5*5, 4000),
+            torch.nn.BatchNorm1d(4000),
             torch.nn.ReLU(inplace=True),
 
             # FC Linear calc 2단계
             #       1000 -> 1000의 이유는 차원 증가를 위해서. (MLP쓰는 이유에서 착안)
-            torch.nn.Linear(1000, 1000),
-            torch.nn.BatchNorm1d(1000),
+            torch.nn.Linear(4000, 4000),
+            torch.nn.BatchNorm1d(4000),
             torch.nn.ReLU(inplace=True),
 
             # 최종 Classification단계
             #       최종 1000개의 Feature에서 최종 클래스인 2 (차선이다, 아니다)로 구분
-            torch.nn.Linear(1000, outputs_class)
+            torch.nn.Linear(4000, outputs_class)
             # torch.nn.BatchNorm1d(outputs_class),        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
             # torch.nn.Softmax()
         )
@@ -180,6 +182,10 @@ learning_rate = 1.5e-1#1.5e-1
 optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 loss_fun = torch.nn.MSELoss()
 
+# loss graph 출력용
+loss_graph_x = []
+loss_graph_y = []
+
 for t in range(1000):
 
 
@@ -201,13 +207,21 @@ for t in range(1000):
     # 아래 과정에서 inference
     hypothesis = net.forward(inputs).to(device)
 
-    # 아래 과정에서 loss 계산, backpropagation
+    # 아래 과정에서 loss 계산
     loss = loss_fun(hypothesis, outputs).to(device)
 
     finish_clock = time.time()
     fps = 1. / (finish_clock - start_clock)
     print(t, loss.item(), 'fps = %f' % (fps))
 
+
+    # loss graph 출력
+    loss_graph_x.append(t)
+    loss_graph_y.append(loss.item())
+    plt.plot(loss_graph_x, loss_graph_y)
+
+
+    # 아래 과정에서 back-propagation
     optimizer.zero_grad()
 
     loss.backward()
@@ -217,3 +231,6 @@ for t in range(1000):
     # if (t == 999) | (loss.item() < 1.5e-3):
     if(loss.item() < 1.5e-3):
         torch.save(net.state_dict(), 'save_Lane_net.pt')
+        break
+
+plt.show()
