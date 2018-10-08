@@ -18,6 +18,8 @@ import matplotlib.pylab as plt
 # 해당 이름을 기준으로 txt를 실행
 txt_path = '/Users/CHP/Lane_detector_pytorch/sample/txt/'
 img_path = '/Users/CHP/Lane_detector_pytorch/sample/'
+# txt_path = '/Users/CHP/Lane_detector_pytorch/gt_sw/txt/'
+# img_path = '/Users/CHP/Lane_detector_pytorch/gt_Sw/'
 
 for root, dirs, txt_files in os.walk(txt_path):
     for t in txt_files:
@@ -139,7 +141,7 @@ for gt_num in range(len(coordinates)):
 
 
 # 10 batch size로 inputs 데이터를 묶은 것.
-batch_size = 10
+batch_size = 1
 patch_ea = len(img_PIL_patch)
 for t in range(100):
     # Input patch image load and reform to mini batch format
@@ -177,7 +179,7 @@ for t in range(100):
 " Train method 3"
 "GT영역만 잡아서 CNN없이 FC로 --> 근대 얜 별로일듯. 2d 특징이 죽을 것 같음."
 
-batch_size = 10
+batch_size = 2
 channel = 3
 width = 15#256#256     #1280
 height = 15#480#256    #960    # 1920 / 4 = 480
@@ -226,45 +228,69 @@ class KJY_MODEL(torch.nn.Module):
             # 입력 채널 개수
             torch.nn.BatchNorm2d(3),        # BN은 배치사이즈가 1보다 커야함.
 
-            # CNN Layer 1
-            torch.nn.Conv2d(3, 81, kernel_size=3, stride=1, padding=1),     # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(81),
-            torch.nn.ReLU(inplace=True),
-            torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),         # output = 9 x 8 x 8
+            # # CNN Layer 1
+            # torch.nn.Conv2d(3, 81, kernel_size=3, stride=1, padding=1),     # output = 9 x 15 x 15
+            # torch.nn.BatchNorm2d(81),
+            # torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),         # output = 9 x 8 x 8
+            #
+            # # CNN Layer 2
+            # torch.nn.Conv2d(81, 274, kernel_size=3, stride=1, padding=1),   # output = 27 x 8 x 8
+            # torch.nn.BatchNorm2d(274),
+            # torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1)          # 274 * 5 * 5 = 6,850
 
-            # CNN Layer 2
-            torch.nn.Conv2d(81, 274, kernel_size=3, stride=1, padding=1),   # output = 27 x 8 x 8
-            torch.nn.BatchNorm2d(274),
+            # CNN Layer 1
+            torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(64),
             torch.nn.ReLU(inplace=True),
-            torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1)          # 274 * 5 * 5 = 6,850
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # CNN Layer 1
+            torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(128),
+            torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # CNN Layer 1
+            torch.nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(256),
+            torch.nn.ReLU(inplace=True),
+            torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # # CNN Layer 2
+            # torch.nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),  # output = 27 x 8 x 8
+            # torch.nn.BatchNorm2d(256),
+            # torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1)  # 274 * 5 * 5 = 6,850
         )
 
         self.classifier = torch.nn.Sequential(
             # CNN단의 최종 데이터에 대해 BN 실시
             #       Conv2의 출력을 Linear로 변환한 값을 넣음. channel x width x height
-            torch.nn.BatchNorm1d(274*5*5),
+            torch.nn.BatchNorm1d(256*8*8),
 
             # FC Linear calc 1단계
-            torch.nn.Linear(274*5*5, 4000),
-            torch.nn.BatchNorm1d(4000),
+            torch.nn.Linear(256*8*8, 4096),
+            torch.nn.BatchNorm1d(4096),
             torch.nn.ReLU(inplace=True),
 
             # FC Linear calc 2단계
             #       1000 -> 1000의 이유는 차원 증가를 위해서. (MLP쓰는 이유에서 착안)
-            torch.nn.Linear(4000, 4000),
-            torch.nn.BatchNorm1d(4000),
+            torch.nn.Linear(4096, 4096),
+            torch.nn.BatchNorm1d(4096),
             torch.nn.ReLU(inplace=True),
 
             # 최종 Classification단계
             #       최종 1000개의 Feature에서 최종 클래스인 2 (차선이다, 아니다)로 구분
-            torch.nn.Linear(4000, outputs_class),
+            torch.nn.Linear(4096, outputs_class),
             # torch.nn.BatchNorm1d(outputs_class),        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
             torch.nn.Softmax()
         )
 
     def forward(self, input_):
         feature_out_ = self.feature(input_)
-        fc_inputs_ = feature_out_.view(feature_out_.size(0), 274 * 5 * 5)   # Conv2 -> Fully Connected
+        fc_inputs_ = feature_out_.view(feature_out_.size(0), 256 * 8 * 8)   # Conv2 -> Fully Connected
                                                                             # feature_out_.size(0) 는 batch_size
         hypothesis_ = self.classifier(fc_inputs_)
         print(hypothesis_.size())
@@ -289,6 +315,9 @@ loss_fun = torch.nn.MSELoss()
 
 for t in range(500):
 
+    if batch_size != 1 :
+        print('The value of patch_size have to 1')
+
     # 학습한 데이터 입력
     l = int(len(img_PIL_patch) / batch_size)
     n = (t % l)+1
@@ -308,15 +337,15 @@ for t in range(500):
     hypothesis = net.forward(inputs).to(device)
 
     # hypothesis 결과를 True, False로 출력하는 코드
-    for k in range(batch_size):
-        if hypothesis[k][0] > hypothesis[k][1] :
-            print(True)
-        else:
-            print(False)
-    print('\n')
+    # for k in range(batch_size):
+    #     if hypothesis[k][0] > hypothesis[k][1] :
+    #         print(True)
+    #     else:
+    #         print(False)
+    # print('\n')
 
     # hypothesis 결과를 value로 출력하는 코드
-    # print(hypothesis)
+    print(hypothesis)
 
 
 

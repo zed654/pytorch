@@ -22,10 +22,10 @@ def putpixel_area(img_, x_, y_):
             img_.putpixel((x_ + j, y_ + i), (128, 128, 128))
 
 # 해당 이름을 기준으로 txt를 실행
-# txt_path = '/Users/CHP/Lane_detector_pytorch/sample/txt/'
-# img_path = '/Users/CHP/Lane_detector_pytorch/sample/'
-txt_path = '/Users/CHP/Lane_detector_pytorch/gt_sw/txt/'
-img_path = '/Users/CHP/Lane_detector_pytorch/gt_Sw/'
+txt_path = '/Users/CHP/Lane_detector_pytorch/sample/txt/'
+img_path = '/Users/CHP/Lane_detector_pytorch/sample/'
+# txt_path = '/Users/CHP/Lane_detector_pytorch/gt_sw/txt/'
+# img_path = '/Users/CHP/Lane_detector_pytorch/gt_Sw/'
 
 for root, dirs, txt_files in os.walk(txt_path):
     for t in txt_files:
@@ -98,7 +98,7 @@ for gt_num in range(len(coordinates)):
 
 device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
 
-batch_size = 30
+batch_size = 2
 channel = 3
 width = 15#256#256     #1280
 height = 15#480#256    #960    # 1920 / 4 = 480
@@ -125,45 +125,69 @@ class KJY_MODEL(torch.nn.Module):
             # 입력 채널 개수
             torch.nn.BatchNorm2d(3),        # BN은 배치사이즈가 1보다 커야함.
 
-            # CNN Layer 1
-            torch.nn.Conv2d(3, 81, kernel_size=3, stride=1, padding=1),     # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(81),
-            torch.nn.ReLU(inplace=True),
-            torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),         # output = 9 x 8 x 8
+            # # CNN Layer 1
+            # torch.nn.Conv2d(3, 81, kernel_size=3, stride=1, padding=1),     # output = 9 x 15 x 15
+            # torch.nn.BatchNorm2d(81),
+            # torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),         # output = 9 x 8 x 8
+            #
+            # # CNN Layer 2
+            # torch.nn.Conv2d(81, 274, kernel_size=3, stride=1, padding=1),   # output = 27 x 8 x 8
+            # torch.nn.BatchNorm2d(274),
+            # torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1)          # 274 * 5 * 5 = 6,850
 
-            # CNN Layer 2
-            torch.nn.Conv2d(81, 274, kernel_size=3, stride=1, padding=1),   # output = 27 x 8 x 8
-            torch.nn.BatchNorm2d(274),
+            # CNN Layer 1
+            torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(64),
             torch.nn.ReLU(inplace=True),
-            torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1)          # 274 * 5 * 5 = 6,850
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # CNN Layer 1
+            torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(128),
+            torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # CNN Layer 1
+            torch.nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(256),
+            torch.nn.ReLU(inplace=True),
+            torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # # CNN Layer 2
+            # torch.nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),  # output = 27 x 8 x 8
+            # torch.nn.BatchNorm2d(256),
+            # torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1)  # 274 * 5 * 5 = 6,850
         )
 
         self.classifier = torch.nn.Sequential(
             # CNN단의 최종 데이터에 대해 BN 실시
             #       Conv2의 출력을 Linear로 변환한 값을 넣음. channel x width x height
-            torch.nn.BatchNorm1d(274*5*5),
+            torch.nn.BatchNorm1d(256*8*8),
 
             # FC Linear calc 1단계
-            torch.nn.Linear(274*5*5, 4000),
-            torch.nn.BatchNorm1d(4000),
+            torch.nn.Linear(256*8*8, 4096),
+            torch.nn.BatchNorm1d(4096),
             torch.nn.ReLU(inplace=True),
 
             # FC Linear calc 2단계
             #       1000 -> 1000의 이유는 차원 증가를 위해서. (MLP쓰는 이유에서 착안)
-            torch.nn.Linear(4000, 4000),
-            torch.nn.BatchNorm1d(4000),
+            torch.nn.Linear(4096, 4096),
+            torch.nn.BatchNorm1d(4096),
             torch.nn.ReLU(inplace=True),
 
             # 최종 Classification단계
             #       최종 1000개의 Feature에서 최종 클래스인 2 (차선이다, 아니다)로 구분
-            torch.nn.Linear(4000, outputs_class)
+            torch.nn.Linear(4096, outputs_class)
             # torch.nn.BatchNorm1d(outputs_class),        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
             # torch.nn.Softmax()
         )
 
     def forward(self, input_):
         feature_out_ = self.feature(input_)
-        fc_inputs_ = feature_out_.view(feature_out_.size(0), 274 * 5 * 5)   # Conv2 -> Fully Connected
+        fc_inputs_ = feature_out_.view(feature_out_.size(0), 256 * 8 * 8)   # Conv2 -> Fully Connected
                                                                             # feature_out_.size(0) 는 batch_size
         hypothesis_ = self.classifier(fc_inputs_)
         print(hypothesis_.size())
@@ -178,7 +202,7 @@ class KJY_MODEL(torch.nn.Module):
 # 아래는 Training 단계
 net = KJY_MODEL().to(device)
 
-learning_rate = 1.5e-1#1.5e-1
+learning_rate = 1.5e-2#1.5e-1
 optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 loss_fun = torch.nn.MSELoss()
 
@@ -187,10 +211,10 @@ loss_graph_x = []
 loss_graph_y = []
 
 for t in range(1000):
-
-
     # Input patch image load and reform to mini batch format
     l = int(len(img_PIL_patch) / batch_size)
+    if batch_size > len(img_PIL_patch) :
+        print('batch_size is larger than img patchs')
     n = (t % l)+1
     m = batch_size * n
     inputs = ToTensor()(img_PIL_patch[m-1])
@@ -200,7 +224,8 @@ for t in range(1000):
         inputs_tmp = inputs_tmp.view(1, 3, 15, 15)
         inputs = torch.cat((inputs, inputs_tmp), 0)
 
-
+    # 랜덤 데이터 입력
+    # inputs = torch.randint(0, 255, (batch_size, channel, width, height))  # 0~255범위의 값을 입력한다.
 
     start_clock = time.time()
 
@@ -231,6 +256,6 @@ for t in range(1000):
     # if (t == 999) | (loss.item() < 1.5e-3):
     if(loss.item() < 1.5e-3):
         torch.save(net.state_dict(), 'save_Lane_net.pt')
-        break
+        # break
 
 plt.show()
