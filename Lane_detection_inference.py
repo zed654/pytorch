@@ -89,13 +89,18 @@ for gt_num in range(len(coordinates)):
     img_PIL_resize = img_PIL.resize((int(w / 2), int(h / 2)))
 
     for coord_num in range(len(coordinates[gt_num])):
-        print(gt_num, coord_num)
+        print('The number of Txt files = %d / %d %d %s \t\t The number of Patch Image = %d' % (gt_num, len(coordinates), coord_num, txt_name[gt_num], len(img_PIL_patch)))
 
         # resized된 이미지에서 patch size를 15x15로
         x1 = int((int(coordinates[gt_num][coord_num][0]) - 15)/2)
         y1 = int((int(coordinates[gt_num][coord_num][1]) - 15)/2 + 302)
         x2 = int((int(coordinates[gt_num][coord_num][0]) + 15)/2)
         y2 = int((int(coordinates[gt_num][coord_num][1]) + 15)/2 + 302)
+
+        # patch size가 (15, 15)로 반듯하게 잘리지 않으면, 강제로 (15, 15)로 리사이즈해준다.
+        if patch_tmp.size != (15, 15):
+            patch_tmp = patch_tmp.resize((15, 15))
+
         patch_tmp = img_PIL_resize.crop((x1, y1, x2, y2))
 
         # resized된 이미지에서 patch size를 30x30로
@@ -111,6 +116,7 @@ for gt_num in range(len(coordinates)):
         # x2 = (int(coordinates[gt_num][coord_num][0]) + 60)
         # y2 = (int(coordinates[gt_num][coord_num][1]) + 60) + 604
         # patch_tmp = img_PIL.crop((x1, y1, x2, y2))
+
 
         # 원본 이미지에 GT x, y좌표를 그리는 코드
         # tmp_x = int(coordinates[gt_num][coord_num][0])

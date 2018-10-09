@@ -84,7 +84,7 @@ for gt_num in range(len(coordinates)):
     img_PIL_resize = img_PIL.resize((int(w / 2), int(h / 2)))
 
     for coord_num in range(len(coordinates[gt_num])):
-        print(gt_num, coord_num)
+        print('The number of Txt files = %d / %d %d %s \t\t The number of Patch Image = %d' % (gt_num, len(coordinates), coord_num, txt_name[gt_num], len(img_PIL_patch)))
 
         # resized된 이미지에서 patch size를 15x15로
         x1 = int((int(coordinates[gt_num][coord_num][0]) - 15)/2)
@@ -92,6 +92,10 @@ for gt_num in range(len(coordinates)):
         x2 = int((int(coordinates[gt_num][coord_num][0]) + 15)/2)
         y2 = int((int(coordinates[gt_num][coord_num][1]) + 15)/2 + 302)
         patch_tmp = img_PIL_resize.crop((x1, y1, x2, y2))
+
+        # patch size가 (15, 15)로 반듯하게 잘리지 않으면, 강제로 (15, 15)로 리사이즈해준다.
+        if patch_tmp.size != (15, 15):
+            patch_tmp = patch_tmp.resize((15, 15))
 
         img_PIL_patch.append(patch_tmp)
 
@@ -190,7 +194,7 @@ class KJY_MODEL(torch.nn.Module):
         fc_inputs_ = feature_out_.view(feature_out_.size(0), 256 * 8 * 8)   # Conv2 -> Fully Connected
                                                                             # feature_out_.size(0) 는 batch_size
         hypothesis_ = self.classifier(fc_inputs_)
-        print(hypothesis_.size())
+        # print(hypothesis_.size())
         return hypothesis_
 
 
@@ -202,7 +206,7 @@ class KJY_MODEL(torch.nn.Module):
 # 아래는 Training 단계
 net = KJY_MODEL().to(device)
 
-learning_rate = 1.5e-2#1.5e-1
+learning_rate = 1.5e-3#1.5e-1
 optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 loss_fun = torch.nn.MSELoss()
 
@@ -210,6 +214,8 @@ loss_fun = torch.nn.MSELoss()
 loss_graph_x = []
 loss_graph_y = []
 
+
+patch_size_error_count = 0
 for t in range(1000):
     # Input patch image load and reform to mini batch format
     l = int(len(img_PIL_patch) / batch_size)
@@ -220,7 +226,9 @@ for t in range(1000):
     inputs = ToTensor()(img_PIL_patch[m-1])
     inputs = inputs.view(1, 3, 15, 15)
     for i in range(batch_size-1):
+        # print(img_PIL_patch[m-i-2])
         inputs_tmp = ToTensor()(img_PIL_patch[m-i-2])
+        # print(inputs_tmp.size())
         inputs_tmp = inputs_tmp.view(1, 3, 15, 15)
         inputs = torch.cat((inputs, inputs_tmp), 0)
 
@@ -253,8 +261,8 @@ for t in range(1000):
 
     optimizer.step()
 
-    # if (t == 999) | (loss.item() < 1.5e-3):
-    if(loss.item() < 1.5e-3):
+    if (t == 999) | (loss.item() < 1.5e-3):
+    # if(loss.item() < 1.5e-3):
         torch.save(net.state_dict(), 'save_Lane_net.pt')
         # break
 
