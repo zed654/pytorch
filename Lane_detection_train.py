@@ -439,8 +439,8 @@ for t in range(10000):
 
     # if (t == 999) | (loss.item() < 1.5e-3):
     # if(loss.item() < 1.5e-3) & (t % 100 == 0):
-    # if(loss.item() < 1.5e-3):
-    if(t%10 == 0):
+    if(loss.item() < 1.5e-3):
+    # if(t%10 == 0):
         torch.save(net.state_dict(), 'save_Lane_net_new_1024.pt')
         print('save loss')
         # break
