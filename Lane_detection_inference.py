@@ -188,9 +188,9 @@ for j in range(len(coordinates)):
     if patch_tmp.size != (15, 15):
         patch_tmp = patch_tmp.resize((15, 15))
 
-    # putpixel_area(img_PIL_resize, x[j], y[j])
+    #putpixel_area(img_PIL_resize, x[j], y[j])
     img_PIL_patch.append(patch_tmp)
-img_PIL_resize.show()
+#img_PIL_resize.show()
 
 "입력 이미지는 4:3기준 512*384(4:3 * 128)로 리사이즈하여 사용"
 "GT는 좌표지점 기준으로 15 * 15 예상 (홀수여야함)"
@@ -239,7 +239,7 @@ class KJY_MODEL(torch.nn.Module):
 
         self.feature = torch.nn.Sequential(
             # 입력 채널 개수
-            torch.nn.BatchNorm2d(3),  # BN은 배치사이즈가 1보다 커야함.
+            torch.nn.BatchNorm2d(3),        # BN은 배치사이즈가 1보다 커야함.
 
             # # CNN Layer 1
             # torch.nn.Conv2d(3, 81, kernel_size=3, stride=1, padding=1),     # output = 9 x 15 x 15
@@ -254,22 +254,22 @@ class KJY_MODEL(torch.nn.Module):
             # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1)          # 274 * 5 * 5 = 6,850
 
             # CNN Layer 1
-            torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(64),
-            torch.nn.ReLU(inplace=True),
-            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
-
-            # CNN Layer 1
-            torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(128),
-            torch.nn.ReLU(inplace=True),
-            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
-
-            # CNN Layer 1
-            torch.nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(256),
+            torch.nn.Conv2d(3, 6, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(6),
             torch.nn.ReLU(inplace=True),
             torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # CNN Layer 1
+            # torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            # torch.nn.BatchNorm2d(128),
+            # torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # CNN Layer 1
+            torch.nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(12),
+            torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
 
             # # CNN Layer 2
             # torch.nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),  # output = 27 x 8 x 8
@@ -281,32 +281,33 @@ class KJY_MODEL(torch.nn.Module):
         self.classifier = torch.nn.Sequential(
             # CNN단의 최종 데이터에 대해 BN 실시
             #       Conv2의 출력을 Linear로 변환한 값을 넣음. channel x width x height
-            torch.nn.BatchNorm1d(256 * 8 * 8),
+            torch.nn.BatchNorm1d(12*8*8),
 
             # FC Linear calc 1단계
-            torch.nn.Linear(256 * 8 * 8, 1024),
-            torch.nn.BatchNorm1d(1024),
+            torch.nn.Linear(12*8*8, 192),
+            torch.nn.BatchNorm1d(192),
             torch.nn.ReLU(inplace=True),
 
             # FC Linear calc 2단계
             #       1000 -> 1000의 이유는 차원 증가를 위해서. (MLP쓰는 이유에서 착안)
-            torch.nn.Linear(1024, 1024),
-            torch.nn.BatchNorm1d(1024),
-            torch.nn.ReLU(inplace=True),
+            # torch.nn.Linear(1024, 1024),
+            # torch.nn.BatchNorm1d(1024),
+            # torch.nn.ReLU(inplace=True),
 
             # 최종 Classification단계
             #       최종 1000개의 Feature에서 최종 클래스인 2 (차선이다, 아니다)로 구분
-            torch.nn.Linear(1024, outputs_class),
+            torch.nn.Linear(192, outputs_class),
+            torch.nn.Sigmoid()
             # torch.nn.BatchNorm1d(outputs_class),        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
-            torch.nn.Softmax()
+            # torch.nn.Softmax()
         )
 
     def forward(self, input_):
         feature_out_ = self.feature(input_)
-        fc_inputs_ = feature_out_.view(feature_out_.size(0), 256 * 8 * 8)  # Conv2 -> Fully Connected
-        # feature_out_.size(0) 는 batch_size
+        fc_inputs_ = feature_out_.view(feature_out_.size(0), 12 * 8 * 8)#256 * 8 * 8)   # Conv2 -> Fully Connected
+                                                                            # feature_out_.size(0) 는 batch_size
         hypothesis_ = self.classifier(fc_inputs_)
-        print(hypothesis_.size())
+        # print(hypothesis_.size())
         return hypothesis_
 
     # def bacward(self):
@@ -327,8 +328,8 @@ loss_graph_x = []
 loss_graph_y = []
 
 # for t in range(len(img_PIL_patch)):
-# for t in range(len(coordinates)):
-for t in range(100):
+for t in range(len(coordinates)):
+# for t in range(100):
     if (batch_size % 2 != 0):
         print('batch size % 2 != 0')
 
@@ -363,10 +364,10 @@ for t in range(100):
     print(hypothesis)
     print(t, batch_size, len(img_PIL_patch), 'fps = %f' % (fps))
 
-    if (hypothesis[0][0] > 0.998):
+    if (hypothesis[0][0] > 0.96):
         putpixel_area(img_PIL_resize, x[m - 1], y[m - 1])
 
-    if (hypothesis[1][0] > 0.998):
+    if (hypothesis[1][0] > 0.96):
         putpixel_area(img_PIL_resize, x[m - 2], y[m - 2])
 
 img_PIL_resize.show()

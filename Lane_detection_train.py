@@ -21,6 +21,13 @@ def putpixel_area(img_, x_, y_):
         for j in range(20):
             img_.putpixel((x_ + j, y_ + i), (128, 128, 128))
 
+
+########################################################################################################
+########################################################################################################
+##########################      정답 이미지 불러오기 ########################################################
+########################################################################################################
+########################################################################################################
+
 # 해당 이름을 기준으로 txt를 실행
 txt_path = '/Users/CHP/Lane_detector_pytorch/sample/txt/'
 img_path = '/Users/CHP/Lane_detector_pytorch/sample/'
@@ -100,6 +107,110 @@ for gt_num in range(len(coordinates)):
         img_PIL_patch.append(patch_tmp)
 
 
+
+
+
+
+
+
+
+
+
+
+########################################################################################################
+########################################################################################################
+##########################      오답 이미지 불러오기 ########################################################
+########################################################################################################
+########################################################################################################
+
+# 해당 이름을 기준으로 txt를 실행
+txt_path2 = '/Users/CHP/Lane_detector_pytorch/gt_negative/txt/'
+img_path2 = '/Users/CHP/Lane_detector_pytorch/gt_negative/'
+# txt_path2 = '/Users/CHP/Lane_detector_pytorch/gt_sw/txt/'
+# img_path2 = '/Users/CHP/Lane_detector_pytorch/gt_Sw/'
+
+for root, dirs, txt_files in os.walk(txt_path2):
+    for t in txt_files:
+        full_fname = os.path.join(root, t)
+        print(full_fname)
+
+# GT txt에서 txt파일을 찾기 위해 이미지 파일로부터 이름을 가져온다.
+#   txt_name과 img_name의 순서는 일치하다. (txt_name[3] = img_name[3])
+txt_name2 = []
+for i in range(len(txt_files)):
+    txt_name2.append(txt_files[i])
+
+img_name2 = []
+for i in range(len(txt_files)):
+    img_name2.append(txt_files[i][-12:-4] + '.jpg')
+
+# img_name = list(set(img_name))
+
+# 좌표를 coordinates[num][좌표카운팅][좌표의 x점][좌표의 y점] 이 된다.
+#   여기서 len(coordinates[num])을 통해 해당 점에서 좌표가 카운팅 되었는지를 확인해보고 넘어가야 오류가 안뜬다.
+coordinates2 = []
+# gt_txt_file = []
+# gt_data_line = []
+# gt_data = []
+for i in range(len(txt_files)):
+    # txt의 path를 통해 파일을 읽음
+    gt_txt_file = open(txt_path2 + txt_name2[i], 'rt')
+
+    # 읽은 파일에서 한 줄을 읽어서 저장
+    gt_data_line = gt_txt_file.readline()
+    print(gt_data_line)
+
+    # 데이터의 첫 줄
+    gt_data = gt_data_line.split("   ")
+    len(gt_data)  # 좌표 개수 + 1 개가 나옴.
+
+    label = gt_data[0]  # L0이 들어감.
+    print(label)
+
+    # coordinates에 저장할 좌표변수 생성 및 txt파일로부터 읽어들여서 저장
+    coordinates_tmp = []
+    for c in range(len(gt_data) - 1):
+        coordinates_tmp.append(gt_data[c + 1].split(" "))
+    coordinates2.append(coordinates_tmp)
+
+# 요약
+#   txt_name[num]
+#   img_name[num]
+#   coordinates[num][좌표카운팅][좌표의x점][좌표의y점]
+
+# patch save
+img_PIL_patch2 = []
+for gt_num in range(len(coordinates2)):
+    img_PIL = Image.open(img_path2 + img_name2[gt_num])
+    w, h = img_PIL.size  # 1920 x 1208
+    img_PIL_resize = img_PIL.resize((int(w / 2), int(h / 2)))
+
+    for coord_num in range(len(coordinates2[gt_num])):
+        print('The number of Txt files = %d / %d %d %s \t\t The number of Patch Image = %d' % (gt_num, len(coordinates2), coord_num, txt_name2[gt_num], len(img_PIL_patch2)))
+
+        # resized된 이미지에서 patch size를 15x15로
+        x1 = int((int(coordinates2[gt_num][coord_num][0]) - 15)/2)
+        y1 = int((int(coordinates2[gt_num][coord_num][1]) - 15)/2 + 302)
+        x2 = int((int(coordinates2[gt_num][coord_num][0]) + 15)/2)
+        y2 = int((int(coordinates2[gt_num][coord_num][1]) + 15)/2 + 302)
+        patch_tmp = img_PIL_resize.crop((x1, y1, x2, y2))
+
+        # patch size가 (15, 15)로 반듯하게 잘리지 않으면, 강제로 (15, 15)로 리사이즈해준다.
+        if patch_tmp.size != (15, 15):
+            patch_tmp = patch_tmp.resize((15, 15))
+
+        img_PIL_patch2.append(patch_tmp)
+
+
+
+
+
+############################################################################################################
+############################################################################################################
+############################################################################################################
+############################################################################################################
+
+
 device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
 
 batch_size = 4
@@ -142,22 +253,22 @@ class KJY_MODEL(torch.nn.Module):
             # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1)          # 274 * 5 * 5 = 6,850
 
             # CNN Layer 1
-            torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(64),
-            torch.nn.ReLU(inplace=True),
-            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
-
-            # CNN Layer 1
-            torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(128),
-            torch.nn.ReLU(inplace=True),
-            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
-
-            # CNN Layer 1
-            torch.nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(256),
+            torch.nn.Conv2d(3, 6, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(6),
             torch.nn.ReLU(inplace=True),
             torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # CNN Layer 1
+            # torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            # torch.nn.BatchNorm2d(128),
+            # torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
+
+            # CNN Layer 1
+            torch.nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(12),
+            torch.nn.ReLU(inplace=True),
+            # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
 
             # # CNN Layer 2
             # torch.nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),  # output = 27 x 8 x 8
@@ -169,29 +280,30 @@ class KJY_MODEL(torch.nn.Module):
         self.classifier = torch.nn.Sequential(
             # CNN단의 최종 데이터에 대해 BN 실시
             #       Conv2의 출력을 Linear로 변환한 값을 넣음. channel x width x height
-            torch.nn.BatchNorm1d(256*8*8),
+            torch.nn.BatchNorm1d(12*8*8),
 
             # FC Linear calc 1단계
-            torch.nn.Linear(256*8*8, 1024),
-            torch.nn.BatchNorm1d(1024),
+            torch.nn.Linear(12*8*8, 192),
+            torch.nn.BatchNorm1d(192),
             torch.nn.ReLU(inplace=True),
 
             # FC Linear calc 2단계
             #       1000 -> 1000의 이유는 차원 증가를 위해서. (MLP쓰는 이유에서 착안)
-            torch.nn.Linear(1024, 1024),
-            torch.nn.BatchNorm1d(1024),
-            torch.nn.ReLU(inplace=True),
+            # torch.nn.Linear(1024, 1024),
+            # torch.nn.BatchNorm1d(1024),
+            # torch.nn.ReLU(inplace=True),
 
             # 최종 Classification단계
             #       최종 1000개의 Feature에서 최종 클래스인 2 (차선이다, 아니다)로 구분
-            torch.nn.Linear(1024, outputs_class),
+            torch.nn.Linear(192, outputs_class),
+            torch.nn.Sigmoid()
             # torch.nn.BatchNorm1d(outputs_class),        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
-            torch.nn.Softmax()
+            # torch.nn.Softmax()
         )
 
     def forward(self, input_):
         feature_out_ = self.feature(input_)
-        fc_inputs_ = feature_out_.view(feature_out_.size(0), 256 * 8 * 8)   # Conv2 -> Fully Connected
+        fc_inputs_ = feature_out_.view(feature_out_.size(0), 12 * 8 * 8)#256 * 8 * 8)   # Conv2 -> Fully Connected
                                                                             # feature_out_.size(0) 는 batch_size
         hypothesis_ = self.classifier(fc_inputs_)
         # print(hypothesis_.size())
@@ -214,46 +326,10 @@ loss_fun = torch.nn.MSELoss()
 loss_graph_x = []
 loss_graph_y = []
 
-for t in range(100):
+for t in range(10000):
 # t = 0
 # while(1):
 #     t = t + 1
-
-    # if t%2 == 0:
-    #     # Input patch image load and reform to mini batch format
-    #     l = int(len(img_PIL_patch) / batch_size)
-    #     if batch_size > len(img_PIL_patch) :
-    #         print('batch_size is larger than img patchs')
-    #     n = (t % l)+1
-    #     m = batch_size * n
-    #
-    #     inputs = ToTensor()(img_PIL_patch[m-1])
-    #     inputs = inputs.view(1, 3, 15, 15)
-    #     for i in range(batch_size-1):
-    #         # print(img_PIL_patch[m-i-2])
-    #         inputs_tmp = ToTensor()(img_PIL_patch[m-i-2])
-    #         # print(inputs_tmp.size())
-    #         inputs_tmp = inputs_tmp.view(1, 3, 15, 15)
-    #         inputs = torch.cat((inputs, inputs_tmp), 0)
-    #     inputs = inputs.to(device)
-    #
-    #
-    #     outputs = torch.Tensor(batch_size, outputs_class)
-    #     outputs[:, 0] = 1.
-    #     for i in range(outputs_class - 1):
-    #         outputs[:, i + 1] = 0.
-    #     outputs = outputs.to(device)
-    #
-    # else:
-    #     # 랜덤 데이터 입력
-    #     inputs = torch.randint(0, 255, (batch_size, channel, width, height)) / 255.  # 0~255범위의 값을 입력한다.
-    #     inputs = inputs.to(device)
-    #
-    #     outputs = torch.Tensor(batch_size, outputs_class)
-    #     outputs[:, 0] = 0.
-    #     for i in range(outputs_class - 1):
-    #         outputs[:, i + 1] = 1.
-    #     outputs = outputs.to(device)
 
     if(batch_size % 2 != 0):
         print('batch size % 2 != 0')
@@ -281,15 +357,49 @@ for t in range(100):
         outputs[i][0] = 1.
         outputs[i][1] = 0.
 
-    inputs_tmp = torch.randint(0, 255, (batch_size_half, channel, width, height)) / 255.
-    inputs = torch.cat((inputs, inputs_tmp), 0)
+
+
+
+
+
+    batch_size_half = int(batch_size/2)
+    outputs = torch.Tensor(batch_size, outputs_class)
+
+    # Input patch image load and reform to mini batch format
+    l = int(len(img_PIL_patch2) / batch_size)
+    if batch_size > len(img_PIL_patch2) :
+        print('batch_size is larger than img patchs')
+    n = (t % l)+1
+    m = batch_size * n
+
+    # inputs = ToTensor()(img_PIL_patch2[m-1])
+    inputs_tmp2 = ToTensor()(img_PIL_patch2[m-1])
+    inputs_tmp2 = inputs_tmp2.view(1, 3, 15, 15)
+    inputs = torch.cat((inputs, inputs_tmp2), 0)
+    #inputs = inputs.view(1, 3, 15, 15)
+    for i in range(batch_size_half-1):
+        # print(img_PIL_patch[m-i-2])
+        inputs_tmp = ToTensor()(img_PIL_patch2[m-i-2])
+        # print(inputs_tmp.size())
+        inputs_tmp = inputs_tmp.view(1, 3, 15, 15)
+        inputs = torch.cat((inputs, inputs_tmp), 0)
 
     for i in range(batch_size_half):
-        outputs[batch_size_half + i][0] = 0.
-        outputs[batch_size_half + i][1] = 1.
+        outputs[i][0] = 0.
+        outputs[i][1] = 1.
 
-    inputs = inputs.to(device)
-    outputs = outputs.to(device)
+
+
+
+    # inputs_tmp = torch.randint(0, 255, (batch_size_half, channel, width, height)) / 255.
+    # inputs = torch.cat((inputs, inputs_tmp), 0)
+    #
+    # for i in range(batch_size_half):
+    #     outputs[batch_size_half + i][0] = 0.
+    #     outputs[batch_size_half + i][1] = 1.
+    #
+    # inputs = inputs.to(device)
+    # outputs = outputs.to(device)
 
 
 
@@ -329,7 +439,8 @@ for t in range(100):
 
     # if (t == 999) | (loss.item() < 1.5e-3):
     # if(loss.item() < 1.5e-3) & (t % 100 == 0):
-    if(loss.item() < 1.5e-3):
+    # if(loss.item() < 1.5e-3):
+    if(t%10 == 0):
         torch.save(net.state_dict(), 'save_Lane_net_new_1024.pt')
         print('save loss')
         # break
