@@ -364,10 +364,10 @@ for t in range(len(coordinates)):
     print(hypothesis)
     print(t, batch_size, len(img_PIL_patch), 'fps = %f' % (fps))
 
-    if (hypothesis[0][0] > 0.96):
+    if (hypothesis[0][0] > 0.90):
         putpixel_area(img_PIL_resize, x[m - 1], y[m - 1])
 
-    if (hypothesis[1][0] > 0.96):
+    if (hypothesis[1][0] > 0.90):
         putpixel_area(img_PIL_resize, x[m - 2], y[m - 2])
 
 img_PIL_resize.show()

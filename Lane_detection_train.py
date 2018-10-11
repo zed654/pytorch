@@ -318,7 +318,7 @@ class KJY_MODEL(torch.nn.Module):
 # 아래는 Training 단계
 net = KJY_MODEL().to(device)
 
-learning_rate = 1.5e-3#1.5e-1
+learning_rate = 1.5e-4#1.5e-1
 optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 loss_fun = torch.nn.MSELoss()
 
@@ -326,7 +326,7 @@ loss_fun = torch.nn.MSELoss()
 loss_graph_x = []
 loss_graph_y = []
 
-for t in range(10000):
+for t in range(1000):
 # t = 0
 # while(1):
 #     t = t + 1
@@ -363,7 +363,7 @@ for t in range(10000):
 
 
     batch_size_half = int(batch_size/2)
-    outputs = torch.Tensor(batch_size, outputs_class)
+    # outputs = torch.Tensor(batch_size, outputs_class)
 
     # Input patch image load and reform to mini batch format
     l = int(len(img_PIL_patch2) / batch_size)
@@ -385,8 +385,8 @@ for t in range(10000):
         inputs = torch.cat((inputs, inputs_tmp), 0)
 
     for i in range(batch_size_half):
-        outputs[i][0] = 0.
-        outputs[i][1] = 1.
+        outputs[i+batch_size_half][0] = 0.
+        outputs[i+batch_size_half][1] = 1.
 
 
 
