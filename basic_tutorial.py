@@ -143,6 +143,32 @@
 #   print(list_2)
 #   >>> [1, 2, 3, 4, 5]
 
+
+
+
+
+# 쓰레드 사용하여 병렬연산 하기 (Pytorch)
+# 해당 연산은 device가 cpu던 gpu던 무관하게 사용 가능.
+# import torch
+#
+# class DataParallelModel(torch.nn.Model):
+#     def __init__(self):
+#         super(self, DataParallelModel).__init__()
+#         self.block1 = torch.nn.Linear(10, 20)
+#
+#         # warp block2 in DataParallel
+#         self.block2 = torch.nn.linear(20, 20)
+#         self.block2 = torch.nn.DataParallel(self.block2)
+#
+#         self.block3 = torch.nn.linear(20, 20)
+#
+#     def forward(self, x):
+#         x = self.block1(x)
+#         x = self.block2(x)
+#         x = self.block3(x)
+#         return x
+
+
 '''
 x = torch.randn(1, 10)
 prev_h = torch.randn(1, 20)
