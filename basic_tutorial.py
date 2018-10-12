@@ -48,8 +48,22 @@
 # 시간 카운트하기
 #   from datetime import datetime
 #   start = datetime.now()
-
+#
 # print(datetime.now()-start)
+
+
+# Tensor 나누기 (chunk, split)
+# a = torch.rand(10, 4)
+# >>> a.size()
+# >>>   torch.Size([10, 4])
+# b = torch.chunk(a, 5, 0)      # 0번째 탠서를 5등분 하겠다는 의미
+# >>> b[0].size()
+# >>>   torch.Size([2, 4])
+# >>> b[4].size()
+# >>>   torch.Size([2, 4])
+#
+#   split도 마찬가지인데, chunk은 5등분 하는 것 이고(10이면 b[0]~b[3]), split은 5로 나누겠다는 의미(10이면 b[0]. b[1])
+
 
 # 그 외
 # Tensor a의 평균
