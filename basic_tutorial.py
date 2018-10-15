@@ -107,6 +107,12 @@
 # PIL Image 리사이즈하기
 #   img_PIL_resized = img_PIL.resize((1280, 960))
 
+# PIL Image 이미지처리(Blur, ...) 작업하기
+#from PIL import Image, ImageFilter
+#im = Image.open('python.png')
+#blurImage = im.filter(ImageFilter.BLUR)
+#blurImage.save('python-blur.png')
+
 # PIL Image To Tensor
 #   from torchvision.transforms import ToTensor
 #   to_Tensor = ToTensor()
