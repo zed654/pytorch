@@ -15,8 +15,8 @@ class KJY_MODEL(torch.nn.Module):
             torch.nn.BatchNorm2d(3),        # BN은 배치사이즈가 1보다 커야함.
 
             # CNN Layer 1
-            torch.nn.Conv2d(3, 6, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(6),
+            torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(64),
             torch.nn.ReLU(inplace=True)
             # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
             #
@@ -38,8 +38,8 @@ class KJY_MODEL(torch.nn.Module):
             torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
 
             # CNN Layer 1
-            torch.nn.Conv2d(6, 6, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
-            torch.nn.BatchNorm2d(6),
+            torch.nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),  # output = 9 x 15 x 15
+            torch.nn.BatchNorm2d(64),
             torch.nn.ReLU(inplace=True),
             # torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=1),  # output = 9 x 8 x 8
         )
@@ -47,11 +47,11 @@ class KJY_MODEL(torch.nn.Module):
         self.classifier = torch.nn.Sequential(
             # CNN단의 최종 데이터에 대해 BN 실시
             #       Conv2의 출력을 Linear로 변환한 값을 넣음. channel x width x height
-            torch.nn.BatchNorm1d(6*8*8),
+            torch.nn.BatchNorm1d(64*8*8),
 
             # FC Linear calc 1단계
-            torch.nn.Linear(6*8*8, 192),
-            torch.nn.BatchNorm1d(192),
+            torch.nn.Linear(64*8*8, 1024),
+            torch.nn.BatchNorm1d(1024),
             torch.nn.ReLU(inplace=True),
 
             # FC Linear calc 2단계
@@ -62,7 +62,7 @@ class KJY_MODEL(torch.nn.Module):
 
             # 최종 Classification단계
             #       최종 1000개의 Feature에서 최종 클래스인 2 (차선이다, 아니다)로 구분
-            torch.nn.Linear(192, 2),
+            torch.nn.Linear(1024, 2),
             torch.nn.Sigmoid()
             # torch.nn.BatchNorm1d(outputs_class),        # softmax단인데 필요함? --> 없는게 학습 더 잘 될 듯.
             # torch.nn.Softmax()
@@ -72,7 +72,7 @@ class KJY_MODEL(torch.nn.Module):
         feature_out_1 = self.feature1(input_)
         feature_out_2 = self.feature2(feature_out_1)
         #fc_inputs_1 = feature_out_1.view(feature_out_1.size(0), 6 * 15 * 15)
-        fc_inputs_2 = feature_out_2.view(feature_out_2.size(0), 6 * 8 * 8)#256 * 8 * 8)   # Conv2 -> Fully Connected
+        fc_inputs_2 = feature_out_2.view(feature_out_2.size(0), 64 * 8 * 8)#256 * 8 * 8)   # Conv2 -> Fully Connected
                                                                             # feature_out_.size(0) 는 batch_size
         # # feature img 출력하기
         # feature_1_view = torch.chunk(feature_out_1, feature_out_1.size(0), 0)

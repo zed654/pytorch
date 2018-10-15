@@ -29,10 +29,10 @@ def putpixel_area(img_, x_, y_):
 ########################################################################################################
 
 # 해당 이름을 기준으로 txt를 실행
-txt_path = '/Users/CHP/Lane_detector_pytorch/sample/txt/'
-img_path = '/Users/CHP/Lane_detector_pytorch/sample/'
-# txt_path = '/Users/CHP/Lane_detector_pytorch/gt_sw/txt/'
-# img_path = '/Users/CHP/Lane_detector_pytorch/gt_Sw/'
+# txt_path = '/Users/CHP/Lane_detector_pytorch/sample/txt/'
+# img_path = '/Users/CHP/Lane_detector_pytorch/sample/'
+txt_path = '/Users/CHP/Lane_detector_pytorch/gt_sw/txt/'
+img_path = '/Users/CHP/Lane_detector_pytorch/gt_Sw/'
 
 for root, dirs, txt_files in os.walk(txt_path):
     for t in txt_files:
@@ -213,7 +213,7 @@ for gt_num in range(len(coordinates2)):
 
 device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
 
-batch_size = 4
+batch_size = 100
 channel = 3
 width = 15#256#256     #1280
 height = 15#480#256    #960    # 1920 / 4 = 480
@@ -234,7 +234,7 @@ loss_graph_y = []
 
 inputs = []
 outputs = []
-for t in range(1000):
+for t in range(100):
 # t = 0
 # while(1):
 #     t = t + 1
@@ -348,7 +348,7 @@ for t in range(1000):
     # if (t == 999) | (loss.item() < 1.5e-3):
     # if(loss.item() < 1.5e-3) & (t % 100 == 0):
     # if(loss.item() < 1.5e-3):
-    if(t%10 == 0):
+    if(t%10 == 0) & (loss.item() < 1.5e-3):
         torch.save(net.state_dict(), 'save_Lane_net_new_1024.pt')
         print('save loss')
         # break
