@@ -1,0 +1,43 @@
+name: Sync Debugging Visualization Tool from Repo autonomy-planning-devel
+on:
+  # 매 시간마다 체크
+  schedule:
+    - cron: '0 * * * *'  # 수정된 cron 표현식
+  # 수동으로도 실행 가능
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '설-명'
+        required: false
+        default: 'PnC Vis Tool 파일 수동 동기화'
+      
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Current Repository (autonomy-common-api)
+        uses: actions/checkout@v4
+        with:
+          ref: feature/pnc_viz_tools_sync
+          
+      - name: Checkout Target Repository (autonomy-planning-devel)
+        uses: actions/checkout@v4
+        with:
+          repository: neubility-inc/autonomy-planning-devel
+          path: temp-planning
+          
+      - name: Copy and Check for Changes
+        run: |
+          mkdir -p common_package/data/rviz
+          
+          cp temp-planning/nb_platform_pkg/data/rviz/world_coordinate_LDM.rviz common_package/data/rviz/
+          
+          if [[ -n "$(git status -s)" ]]; then
+            git config --local user.email "ch7170p@naver.com"
+            git config --local user.name "Changhyeon Park"
+            git add .
+            git commit -m "Sync: Update files from autonomy-planning-devel [world_coordinate_LDM.rviz]"
+            git push
+          else
+            echo "No changes detected"
+          fi
