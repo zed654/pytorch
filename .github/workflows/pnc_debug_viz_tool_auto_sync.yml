@@ -50,4 +50,9 @@ jobs:
             git push
           else
             echo "No changes detected"
-          fi
+          fi          
+
+      - name: Cleanup temp directory
+        if: always()  # 워크플로우 성공/실패와 관계없이 항상 실행
+        run: |
+          rm -rf temp-planning
