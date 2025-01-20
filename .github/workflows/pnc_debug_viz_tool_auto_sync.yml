@@ -30,12 +30,13 @@ jobs:
           path: temp-planning
           ref: ${{ matrix.branch }}
           
-      - name: Copy and Check for Changes
+      - name: Copy files
         run: |
           mkdir -p common_package/data/rviz
-          
           cp temp-planning/test/test.cpp common_package/data/rviz/
-          
+
+      - name: Check for Changes and Push
+        run: |
           if [[ -n "$(git status -s)" ]]; then
             git config --local user.email "ch7170p@naver.com"
             git config --local user.name "Changhyeon Park"
