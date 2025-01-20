@@ -14,17 +14,21 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    strategy:
+       matrix:
+        branch: [master]
     steps:
       - name: Checkout Current Repository (autonomy-common-api)
         uses: actions/checkout@v4
         with:
-          ref: feature/pnc_viz_tools_sync
+          ref: ${{ matrix.branch }}
           
       - name: Checkout Target Repository (autonomy-planning-devel)
         uses: actions/checkout@v4
         with:
           repository: neubility-inc/autonomy-planning-devel
           path: temp-planning
+          ref: ${{ matrix.branch }}
           
       - name: Copy and Check for Changes
         run: |
