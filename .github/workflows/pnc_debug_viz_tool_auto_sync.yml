@@ -34,6 +34,7 @@ jobs:
         run: |
           mkdir -p common_package/data/rviz
           cp temp-planning/test/test.cpp common_package/data/rviz/
+          cp timestamp.txt common_package/data/rviz/
 
       - name: Update Timestamp
         run: |
