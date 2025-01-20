@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p common_package/data/rviz
           
-          cp temp-planning/nb_platform_pkg/data/rviz/world_coordinate_LDM.rviz common_package/data/rviz/
+          cp temp-planning/test/test.cpp common_package/data/rviz/
           
           if [[ -n "$(git status -s)" ]]; then
             git config --local user.email "ch7170p@naver.com"
