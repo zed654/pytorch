@@ -35,6 +35,11 @@ jobs:
           mkdir -p common_package/data/rviz
           cp temp-planning/test/test.cpp common_package/data/rviz/
 
+      - name: Update Timestamp
+        run: |
+          # 현재 날짜와 시간을 특정 파일에 기록
+          date "+%Y-%m-%d %H:%M:%S" > timestamp.txt
+          
       - name: Check for Changes and Push
         run: |
           if [[ -n "$(git status -s)" ]]; then
