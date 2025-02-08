@@ -52,7 +52,7 @@ def undistort_with_example_coeffs():
     # 왜곡 계수
     dist_coeffs = np.array([k1, k2, p1, p2, k3])
 
-    labels_path = os.path.join(current_dir, "img/cat_mari.jpg")
+    labels_path = os.path.join(current_dir, "sample_img/cat_mari.jpg")
     undistorted_image = undistort_image(labels_path, camera_matrix, dist_coeffs)
     cv2.imwrite(os.path.join(current_dir, "result/undistorted_cat_mari.jpg"), undistorted_image)
     
@@ -63,7 +63,7 @@ def undistort_with_calibration():
         camera_matrix = np.load(current_dir + '/result/calibration/camera_matrix.npy')
         dist_coeffs = np.load(current_dir + '/result/calibration/dist_coeffs.npy')
         
-        labels_path = os.path.join(current_dir, "img/cat_mari.jpg")
+        labels_path = os.path.join(current_dir, "sample_img/cat_mari.jpg")
         undistorted_image = undistort_image(labels_path, camera_matrix, dist_coeffs)
         cv2.imwrite(os.path.join(current_dir, "result/undistorted_cat_mari.jpg"), undistorted_image)
         

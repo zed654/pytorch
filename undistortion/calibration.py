@@ -13,7 +13,7 @@ parameters = cv2.aruco.DetectorParameters()
 marker_length = 0.05  # 5cm
 
 # 여러 이미지 경로 설정
-image_dir = os.path.join(current_dir, "img/calibration")
+image_dir = os.path.join(current_dir, "sample_img/calibration")
 image_files = [f for f in os.listdir(image_dir) if f.endswith('.png')]
 
 # 3D 점과 2D 점 준비
